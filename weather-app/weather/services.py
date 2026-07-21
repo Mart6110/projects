@@ -79,7 +79,8 @@ def get_forecast(latitude, longitude):
             params={
                 "latitude": latitude,
                 "longitude": longitude,
-                "current_weather": "true",
+                "current": "temperature_2m,relative_humidity_2m,surface_pressure,"
+                "weather_code,wind_speed_10m",
                 "daily": "weathercode,temperature_2m_max,temperature_2m_min",
                 "timezone": "auto",
                 "forecast_days": 5,
@@ -92,12 +93,14 @@ def get_forecast(latitude, longitude):
 
     data = response.json()
 
-    current_raw = data["current_weather"]
+    current_raw = data["current"]
     current = {
-        "temperature": current_raw["temperature"],
-        "windspeed": current_raw["windspeed"],
-        "code": current_raw["weathercode"],
-        "description": describe_weather_code(current_raw["weathercode"]),
+        "temperature": current_raw["temperature_2m"],
+        "humidity": current_raw["relative_humidity_2m"],
+        "pressure": current_raw["surface_pressure"],
+        "windspeed": current_raw["wind_speed_10m"],
+        "code": current_raw["weather_code"],
+        "description": describe_weather_code(current_raw["weather_code"]),
     }
 
     daily_raw = data["daily"]

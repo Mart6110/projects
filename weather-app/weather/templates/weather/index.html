@@ -66,6 +66,29 @@
     }
     .forecast .day .date { font-weight: 600; margin-bottom: 4px; }
     .forecast .day .desc { color: #555; margin: 4px 0; min-height: 2.4em; }
+    .history {
+      margin-top: 32px;
+    }
+    .history h3 { font-size: 1rem; color: #333; margin-bottom: 8px; }
+    .history table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 0.85rem;
+    }
+    .history th, .history td {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .history tr:last-child td { border-bottom: none; }
+    .history th { color: #666; font-weight: 600; }
+    .history tbody tr { cursor: pointer; }
+    .history tbody tr:hover { background: #f0f5ff; }
+    .history tbody tr.active { background: #e0ebff; }
   </style>
 </head>
 <body>
@@ -84,7 +107,10 @@
   <div class="current">
     <h2>{{ location.name }}{% if location.country %}, {{ location.country }}{% endif %}</h2>
     <div class="temp">{{ current.temperature }}&deg;C</div>
-    <div class="meta">{{ current.description }} &middot; Wind {{ current.windspeed }} km/h</div>
+    <div class="meta">
+      {{ current.description }} &middot; Wind {{ current.windspeed }} km/h
+      &middot; Humidity {{ current.humidity }}% &middot; Pressure {{ current.pressure }} hPa
+    </div>
   </div>
 
   <div class="forecast">
@@ -95,6 +121,35 @@
       <div>{{ day.temp_max }}&deg; / {{ day.temp_min }}&deg;</div>
     </div>
     {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if recent_searches %}
+  <div class="history">
+    <h3>Recent searches</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>City</th>
+          <th>Temp</th>
+          <th>Conditions</th>
+          <th>Searched at</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for search in recent_searches %}
+        <tr
+          class="{% if search.city_name == city %}active{% endif %}"
+          onclick="window.location.href='{% url 'index' %}?city={{ search.city_name|urlencode }}'"
+        >
+          <td>{{ search.city_name }}</td>
+          <td>{{ search.temperature }}&deg;C</td>
+          <td>{{ search.description }}</td>
+          <td>{{ search.searched_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
   {% endif %}
 </body>
