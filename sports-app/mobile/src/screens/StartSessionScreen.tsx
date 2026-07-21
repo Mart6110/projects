@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+
+import { ScrollView } from "@/components/ui/scroll-view";
+import { Box } from "@/components/ui/box";
+import { VStack } from "@/components/ui/vstack";
+import { HStack } from "@/components/ui/hstack";
+import { Heading } from "@/components/ui/heading";
+import { Text } from "@/components/ui/text";
+import { Input, InputField } from "@/components/ui/input";
+import { Textarea, TextareaInput } from "@/components/ui/textarea";
+import { Button, ButtonText, ButtonSpinner } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 import { getRoutine } from "../api/routines";
 import { createSession, NewSessionLog } from "../api/sessions";
@@ -68,91 +79,66 @@ export default function StartSessionScreen({ route, navigation }: Props) {
 
   if (!routine) {
     return (
-      <View style={styles.container}>
-        <Text>Loading...</Text>
-      </View>
+      <Box className="flex-1 items-center justify-center bg-background">
+        <Spinner />
+      </Box>
     );
   }
 
   let lastExercise = "";
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-      <Text style={styles.title}>{routine.name}</Text>
+    <ScrollView className="flex-1 bg-background" contentContainerClassName="p-4 pb-10">
+      <Heading size="lg" className="mb-3">
+        {routine.name}
+      </Heading>
 
-      {draftSets.map((set, index) => {
-        const showHeader = set.exerciseName !== lastExercise;
-        lastExercise = set.exerciseName;
-        return (
-          <View key={index}>
-            {showHeader && <Text style={styles.exerciseHeader}>{set.exerciseName}</Text>}
-            <View style={styles.setRow}>
-              <Text style={styles.setLabel}>Set {set.setNumber}</Text>
-              <TextInput
-                style={styles.setInput}
-                keyboardType="number-pad"
-                value={set.reps}
-                onChangeText={(v) => updateSet(index, "reps", v)}
-              />
-              <Text style={styles.unit}>reps</Text>
-              <TextInput
-                style={styles.setInput}
-                keyboardType="decimal-pad"
-                placeholder="kg"
-                value={set.weight}
-                onChangeText={(v) => updateSet(index, "weight", v)}
-              />
-              <Text style={styles.unit}>kg</Text>
-            </View>
-          </View>
-        );
-      })}
+      <VStack space="xs" className="mb-2">
+        {draftSets.map((set, index) => {
+          const showHeader = set.exerciseName !== lastExercise;
+          lastExercise = set.exerciseName;
+          return (
+            <Box key={index}>
+              {showHeader && (
+                <Heading size="sm" className="mb-1.5 mt-4 text-primary">
+                  {set.exerciseName}
+                </Heading>
+              )}
+              <HStack space="sm" className="items-center">
+                <Text className="w-14 text-muted-foreground">Set {set.setNumber}</Text>
+                <Input className="w-16">
+                  <InputField
+                    keyboardType="number-pad"
+                    className="text-center"
+                    value={set.reps}
+                    onChangeText={(v) => updateSet(index, "reps", v)}
+                  />
+                </Input>
+                <Text className="text-muted-foreground">reps</Text>
+                <Input className="w-16">
+                  <InputField
+                    keyboardType="decimal-pad"
+                    placeholder="kg"
+                    className="text-center"
+                    value={set.weight}
+                    onChangeText={(v) => updateSet(index, "weight", v)}
+                  />
+                </Input>
+                <Text className="text-muted-foreground">kg</Text>
+              </HStack>
+            </Box>
+          );
+        })}
+      </VStack>
 
-      <Text style={styles.label}>Notes</Text>
-      <TextInput
-        style={styles.notesInput}
-        placeholder="How did it feel?"
-        multiline
-        value={notes}
-        onChangeText={setNotes}
-      />
+      <Text className="mb-1.5 mt-5 text-muted-foreground">Notes</Text>
+      <Textarea>
+        <TextareaInput placeholder="How did it feel?" multiline value={notes} onChangeText={setNotes} />
+      </Textarea>
 
-      <TouchableOpacity
-        style={[styles.finishButton, isSubmitting && styles.disabled]}
-        onPress={handleFinish}
-        disabled={isSubmitting}
-      >
-        <Text style={styles.finishButtonText}>{isSubmitting ? "Saving..." : "Finish Session"}</Text>
-      </TouchableOpacity>
+      <Button className="mt-6" onPress={handleFinish} disabled={isSubmitting}>
+        {isSubmitting ? <ButtonSpinner /> : <ButtonText>Finish Session</ButtonText>}
+      </Button>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 12 },
-  exerciseHeader: { fontSize: 16, fontWeight: "700", marginTop: 16, marginBottom: 6, color: "#2563eb" },
-  setRow: { flexDirection: "row", alignItems: "center", marginBottom: 6, gap: 6 },
-  setLabel: { width: 56, color: "#555" },
-  setInput: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 6,
-    padding: 8,
-    width: 60,
-    textAlign: "center",
-  },
-  unit: { color: "#888", marginRight: 6 },
-  label: { fontSize: 14, color: "#555", marginTop: 20, marginBottom: 6 },
-  notesInput: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    minHeight: 70,
-    textAlignVertical: "top",
-  },
-  finishButton: { backgroundColor: "#16a34a", borderRadius: 10, padding: 16, alignItems: "center", marginTop: 24 },
-  finishButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  disabled: { opacity: 0.5 },
-});

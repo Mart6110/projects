@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert } from "react-native";
 import * as Location from "expo-location";
+
+import { Box } from "@/components/ui/box";
+import { VStack } from "@/components/ui/vstack";
+import { Heading } from "@/components/ui/heading";
+import { Text } from "@/components/ui/text";
+import { Button, ButtonText } from "@/components/ui/button";
 
 import { createRun } from "../api/runs";
 import { ApiError } from "../api/client";
@@ -109,45 +115,29 @@ export default function RunTrackingScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.stats}>
-        <Text style={styles.distance}>{(distanceMeters / 1000).toFixed(2)} km</Text>
-        <Text style={styles.duration}>{formatDuration(elapsedSeconds)}</Text>
-        <Text style={styles.pace}>{formatPace(elapsedSeconds, distanceMeters)}</Text>
-        {isTracking && <Text style={styles.pointCount}>{pointCount} GPS points recorded</Text>}
-      </View>
+    <Box className="flex-1 items-center justify-center bg-background p-6">
+      <VStack className="mb-12 items-center">
+        <Heading size="5xl">{(distanceMeters / 1000).toFixed(2)} km</Heading>
+        <Text className="mt-2 text-2xl text-foreground">{formatDuration(elapsedSeconds)}</Text>
+        <Text className="mt-1 text-lg text-muted-foreground">{formatPace(elapsedSeconds, distanceMeters)}</Text>
+        {isTracking && (
+          <Text className="mt-4 text-sm text-muted-foreground">{pointCount} GPS points recorded</Text>
+        )}
+      </VStack>
 
       {!isTracking ? (
-        <TouchableOpacity style={styles.startButton} onPress={handleStart} disabled={isSaving}>
-          <Text style={styles.buttonText}>{isSaving ? "Saving..." : "Start Run"}</Text>
-        </TouchableOpacity>
+        <Button
+          className="rounded-full bg-green-600 px-12 py-6 data-[hover=true]:bg-green-600/90 data-[active=true]:bg-green-600/90"
+          onPress={handleStart}
+          disabled={isSaving}
+        >
+          <ButtonText className="text-lg">{isSaving ? "Saving..." : "Start Run"}</ButtonText>
+        </Button>
       ) : (
-        <TouchableOpacity style={styles.stopButton} onPress={handleStop}>
-          <Text style={styles.buttonText}>Stop Run</Text>
-        </TouchableOpacity>
+        <Button variant="destructive" className="rounded-full px-12 py-6" onPress={handleStop}>
+          <ButtonText className="text-lg">Stop Run</ButtonText>
+        </Button>
       )}
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", justifyContent: "center", alignItems: "center", padding: 24 },
-  stats: { alignItems: "center", marginBottom: 48 },
-  distance: { fontSize: 56, fontWeight: "800" },
-  duration: { fontSize: 28, color: "#333", marginTop: 8 },
-  pace: { fontSize: 18, color: "#666", marginTop: 4 },
-  pointCount: { fontSize: 13, color: "#999", marginTop: 16 },
-  startButton: {
-    backgroundColor: "#16a34a",
-    borderRadius: 50,
-    paddingVertical: 20,
-    paddingHorizontal: 48,
-  },
-  stopButton: {
-    backgroundColor: "#dc2626",
-    borderRadius: 50,
-    paddingVertical: 20,
-    paddingHorizontal: 48,
-  },
-  buttonText: { color: "#fff", fontSize: 18, fontWeight: "700" },
-});

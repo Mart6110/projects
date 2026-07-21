@@ -1,6 +1,10 @@
 import React, { useCallback, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+
+import { Box } from "@/components/ui/box";
+import { Card } from "@/components/ui/card";
+import { Text } from "@/components/ui/text";
 
 import { listSessions } from "../api/sessions";
 import { listRuns } from "../api/runs";
@@ -47,52 +51,39 @@ export default function HistoryScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <Box className="flex-1 bg-background">
       <FlatList
         data={entries}
         keyExtractor={(item) => `${item.type}-${item.id}`}
-        contentContainerStyle={styles.list}
+        contentContainerClassName="p-4"
         refreshing={isLoading}
         onRefresh={load}
         ListEmptyComponent={
-          !isLoading ? <Text style={styles.empty}>No workouts or runs logged yet.</Text> : null
+          !isLoading ? (
+            <Text className="mt-10 text-center text-muted-foreground">No workouts or runs logged yet.</Text>
+          ) : null
         }
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <Card className="mb-3">
             {item.type === "session" ? (
               <>
-                <Text style={styles.cardTitle}>🏋️ {item.routineName}</Text>
-                <Text style={styles.cardSubtitle}>{item.setCount} sets logged</Text>
+                <Text className="font-semibold">🏋️ {item.routineName}</Text>
+                <Text className="mt-1 text-muted-foreground">{item.setCount} sets logged</Text>
               </>
             ) : (
               <>
-                <Text style={styles.cardTitle}>🏃 Run · {(item.distanceMeters / 1000).toFixed(2)} km</Text>
-                <Text style={styles.cardSubtitle}>
+                <Text className="font-semibold">
+                  🏃 Run · {(item.distanceMeters / 1000).toFixed(2)} km
+                </Text>
+                <Text className="mt-1 text-muted-foreground">
                   {formatDuration(item.durationSeconds)} · {formatPace(item.durationSeconds, item.distanceMeters)}
                 </Text>
               </>
             )}
-            <Text style={styles.cardDate}>{new Date(item.date).toLocaleString()}</Text>
-          </View>
+            <Text className="mt-2 text-xs text-muted-foreground">{new Date(item.date).toLocaleString()}</Text>
+          </Card>
         )}
       />
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f7fa" },
-  list: { padding: 16 },
-  empty: { textAlign: "center", color: "#888", marginTop: 40 },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#eee",
-  },
-  cardTitle: { fontSize: 16, fontWeight: "600" },
-  cardSubtitle: { color: "#666", marginTop: 4 },
-  cardDate: { color: "#999", fontSize: 12, marginTop: 8 },
-});

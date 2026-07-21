@@ -1,7 +1,14 @@
 import React, { useCallback, useState } from "react";
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+
+import { Box } from "@/components/ui/box";
+import { Card } from "@/components/ui/card";
+import { Pressable } from "@/components/ui/pressable";
+import { Text } from "@/components/ui/text";
+import { Heading } from "@/components/ui/heading";
+import { Button, ButtonText } from "@/components/ui/button";
 
 import { listRoutines } from "../api/routines";
 import { Routine } from "../types";
@@ -31,57 +38,33 @@ export default function RoutinesListScreen({ navigation }: Props) {
   );
 
   return (
-    <View style={styles.container}>
+    <Box className="flex-1 bg-background">
       <FlatList
         data={routines}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={styles.list}
+        keyExtractor={(item) => item.id}
+        contentContainerClassName="p-4 pb-24"
         refreshing={isLoading}
         onRefresh={() => listRoutines().then(setRoutines)}
         ListEmptyComponent={
-          !isLoading ? <Text style={styles.empty}>No routines yet. Create one to get started.</Text> : null
+          !isLoading ? (
+            <Text className="mt-10 text-center text-muted-foreground">
+              No routines yet. Create one to get started.
+            </Text>
+          ) : null
         }
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate("RoutineDetail", { routineId: item.id })}
-          >
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <Text style={styles.cardSubtitle}>{item.exercises.length} exercises</Text>
-          </TouchableOpacity>
+          <Pressable onPress={() => navigation.navigate("RoutineDetail", { routineId: item.id })}>
+            <Card className="mb-3">
+              <Heading size="sm">{item.name}</Heading>
+              <Text className="mt-1 text-muted-foreground">{item.exercises.length} exercises</Text>
+            </Card>
+          </Pressable>
         )}
       />
 
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate("CreateRoutine")}>
-        <Text style={styles.fabText}>+ New Routine</Text>
-      </TouchableOpacity>
-    </View>
+      <Button className="absolute bottom-6 left-4 right-4" onPress={() => navigation.navigate("CreateRoutine")}>
+        <ButtonText>+ New Routine</ButtonText>
+      </Button>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f7fa" },
-  list: { padding: 16, paddingBottom: 90 },
-  empty: { textAlign: "center", color: "#888", marginTop: 40 },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#eee",
-  },
-  cardTitle: { fontSize: 17, fontWeight: "600" },
-  cardSubtitle: { color: "#666", marginTop: 4 },
-  fab: {
-    position: "absolute",
-    bottom: 24,
-    left: 16,
-    right: 16,
-    backgroundColor: "#2563eb",
-    borderRadius: 10,
-    padding: 16,
-    alignItems: "center",
-  },
-  fabText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-});

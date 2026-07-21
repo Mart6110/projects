@@ -66,9 +66,48 @@ runs live via GPS, and see a combined history.
 - `src/navigation/RootNavigator.tsx` — switches between the auth stack
   (Login/Register) and the main app (bottom tabs: Routines, Run, History,
   Account) based on whether a user is logged in.
-- `src/screens/` — one file per screen.
+- `src/screens/` — one file per screen, built with gluestack-ui
+  components (see below).
 - `src/utils/geo.ts` — haversine distance, duration/pace formatting used
   by the run tracker.
+- `components/ui/` — gluestack-ui components, copied into the project by
+  its CLI (not an installed package) — same idea as shadcn/ui. Treat
+  these as your own code: edit them directly if you need to change a
+  component's look everywhere it's used.
+
+## UI: gluestack-ui + NativeWind
+
+All screens are built with [gluestack-ui](https://gluestack.io/ui) v5
+(alpha), styled via [NativeWind](https://www.nativewind.dev/) v5
+(Tailwind CSS v4 for React Native) — `className="..."` props instead of
+`StyleSheet.create`.
+
+- `global.css` — Tailwind directives plus the light/dark color tokens
+  (`--primary`, `--background`, etc.) gluestack's components read from.
+- `tailwind.config.js`, `metro.config.js`, `babel.config.js` — added/
+  modified by `gluestack-ui init`; `withNativewind(...)` in
+  `metro.config.js` is what makes `className` actually apply styles.
+- `App.tsx` wraps everything in `<GluestackUIProvider mode="system">`,
+  which follows the OS light/dark setting (pass `"light"` or `"dark"` to
+  force one).
+- **Adding more components**: `npx gluestack-ui@latest add <name>` (e.g.
+  `add select`) copies a new component into `components/ui/`. There's no
+  full name list in the CLI's `--help` — check gluestack's docs site for
+  what's available.
+
+### Known rough edges (v5 is alpha)
+
+- The CLI's generated `babel.config.js` references `babel-preset-expo`
+  but doesn't add it as a dependency — already fixed here, but re-running
+  `gluestack-ui init` fresh elsewhere may reproduce it
+  (`npm install --save-dev babel-preset-expo` if so).
+- `global.css`'s side-effect import needs an ambient `declare module
+  "*.css";` (see `css.d.ts`) — the library's own type package
+  (`react-native-css`) doesn't declare one itself.
+- Two generated components (`components/ui/spinner`, `components/ui/badge`)
+  had a type error in their internal `styled(...)` calls; fixed in place
+  by casting the `styled()` result back to the original RN component's
+  type. Purely a type-level fix — no behavior change.
 
 ## Notes
 
@@ -86,7 +125,8 @@ runs live via GPS, and see a combined history.
   finish a run or session, saving will fail with an alert and the data is
   lost. Fine for local/dev use; would need addressing before wider use.
 - Verified with `npx tsc --noEmit` (no type errors) and
-  `npx expo export --platform web` (bundles cleanly, 534 modules) as a
-  smoke test — actual on-device behavior (GPS, permissions) needs a real
+  `npx expo export --platform web` (bundles cleanly, 975 modules) after
+  the full gluestack-ui migration — actual on-device rendering/behavior
+  (GPS, permissions, how the Tailwind styles actually look) needs a real
   phone or simulator to verify, which wasn't available in the environment
   this was built in.

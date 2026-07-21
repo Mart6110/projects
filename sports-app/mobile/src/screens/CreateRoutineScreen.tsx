@@ -1,16 +1,18 @@
 import React, { useState } from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, Platform } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+
+import { KeyboardAvoidingView } from "@/components/ui/keyboard-avoiding-view";
+import { ScrollView } from "@/components/ui/scroll-view";
+import { Box } from "@/components/ui/box";
+import { VStack } from "@/components/ui/vstack";
+import { HStack } from "@/components/ui/hstack";
+import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
+import { Text } from "@/components/ui/text";
+import { Input, InputField } from "@/components/ui/input";
+import { Button, ButtonText, ButtonSpinner } from "@/components/ui/button";
+import { Pressable } from "@/components/ui/pressable";
 
 import { createRoutine } from "../api/routines";
 import { ApiError } from "../api/client";
@@ -70,113 +72,81 @@ export default function CreateRoutineScreen({ navigation }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-        <Text style={styles.label}>Routine name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="e.g. Push Day"
-          value={name}
-          onChangeText={setName}
-        />
+    <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView className="flex-1 bg-background p-4" contentContainerClassName="pb-10">
+        <Text className="mb-1.5 text-muted-foreground">Routine name</Text>
+        <Input className="mb-5">
+          <InputField placeholder="e.g. Push Day" value={name} onChangeText={setName} />
+        </Input>
 
-        <Text style={styles.sectionTitle}>Exercises</Text>
-        {exercises.map((ex, index) => (
-          <View key={index} style={styles.exerciseCard}>
-            <TextInput
-              style={styles.input}
-              placeholder="Exercise name"
-              value={ex.name}
-              onChangeText={(v) => updateExercise(index, "name", v)}
-            />
-            <View style={styles.row}>
-              <View style={styles.rowField}>
-                <Text style={styles.smallLabel}>Sets</Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="number-pad"
-                  value={ex.sets}
-                  onChangeText={(v) => updateExercise(index, "sets", v)}
-                />
-              </View>
-              <View style={styles.rowField}>
-                <Text style={styles.smallLabel}>Reps</Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="number-pad"
-                  value={ex.reps}
-                  onChangeText={(v) => updateExercise(index, "reps", v)}
-                />
-              </View>
-              <View style={styles.rowField}>
-                <Text style={styles.smallLabel}>Weight (kg)</Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="decimal-pad"
-                  placeholder="optional"
-                  value={ex.weight}
-                  onChangeText={(v) => updateExercise(index, "weight", v)}
-                />
-              </View>
-            </View>
-            {exercises.length > 1 && (
-              <TouchableOpacity onPress={() => removeExercise(index)}>
-                <Text style={styles.removeText}>Remove exercise</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ))}
+        <Heading size="md" className="mb-3">
+          Exercises
+        </Heading>
 
-        <TouchableOpacity
-          style={styles.addButton}
+        <VStack space="md" className="mb-2">
+          {exercises.map((ex, index) => (
+            <Card key={index}>
+              <Input className="mb-3">
+                <InputField
+                  placeholder="Exercise name"
+                  value={ex.name}
+                  onChangeText={(v) => updateExercise(index, "name", v)}
+                />
+              </Input>
+              <HStack space="sm">
+                <Box className="flex-1">
+                  <Text className="mb-1 text-xs text-muted-foreground">Sets</Text>
+                  <Input>
+                    <InputField
+                      keyboardType="number-pad"
+                      value={ex.sets}
+                      onChangeText={(v) => updateExercise(index, "sets", v)}
+                    />
+                  </Input>
+                </Box>
+                <Box className="flex-1">
+                  <Text className="mb-1 text-xs text-muted-foreground">Reps</Text>
+                  <Input>
+                    <InputField
+                      keyboardType="number-pad"
+                      value={ex.reps}
+                      onChangeText={(v) => updateExercise(index, "reps", v)}
+                    />
+                  </Input>
+                </Box>
+                <Box className="flex-1">
+                  <Text className="mb-1 text-xs text-muted-foreground">Weight (kg)</Text>
+                  <Input>
+                    <InputField
+                      keyboardType="decimal-pad"
+                      placeholder="optional"
+                      value={ex.weight}
+                      onChangeText={(v) => updateExercise(index, "weight", v)}
+                    />
+                  </Input>
+                </Box>
+              </HStack>
+              {exercises.length > 1 && (
+                <Pressable onPress={() => removeExercise(index)}>
+                  <Text className="mt-2 text-destructive">Remove exercise</Text>
+                </Pressable>
+              )}
+            </Card>
+          ))}
+        </VStack>
+
+        <Button
+          variant="ghost"
+          className="mb-5"
           onPress={() => setExercises((prev) => [...prev, emptyExercise()])}
         >
-          <Text style={styles.addButtonText}>+ Add exercise</Text>
-        </TouchableOpacity>
+          <ButtonText>+ Add exercise</ButtonText>
+        </Button>
 
-        <TouchableOpacity
-          style={[styles.saveButton, isSubmitting && styles.disabled]}
-          onPress={handleSave}
-          disabled={isSubmitting}
-        >
-          <Text style={styles.saveButtonText}>{isSubmitting ? "Saving..." : "Save routine"}</Text>
-        </TouchableOpacity>
+        <Button onPress={handleSave} disabled={isSubmitting}>
+          {isSubmitting ? <ButtonSpinner /> : <ButtonText>Save routine</ButtonText>}
+        </Button>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
-  label: { fontSize: 14, color: "#555", marginBottom: 6 },
-  smallLabel: { fontSize: 12, color: "#777", marginBottom: 4 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", marginTop: 20, marginBottom: 10 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 15,
-    marginBottom: 10,
-    backgroundColor: "#fff",
-  },
-  exerciseCard: {
-    backgroundColor: "#f9fafb",
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: "#eee",
-  },
-  row: { flexDirection: "row", gap: 8 },
-  rowField: { flex: 1 },
-  removeText: { color: "#dc2626", marginTop: 4 },
-  addButton: { alignItems: "center", padding: 12, marginBottom: 20 },
-  addButtonText: { color: "#2563eb", fontWeight: "600" },
-  saveButton: { backgroundColor: "#16a34a", borderRadius: 10, padding: 16, alignItems: "center" },
-  saveButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  disabled: { opacity: 0.5 },
-});
