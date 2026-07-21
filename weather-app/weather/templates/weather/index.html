@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Weather</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 0 16px;
+      background: #f5f7fa;
+      color: #1a1a1a;
+    }
+    h1 { font-size: 1.6rem; margin-bottom: 20px; }
+    form.search-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    form.search-form input[type=text] {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    form.search-form button {
+      padding: 10px 16px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .current {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .current h2 { margin: 0 0 4px; font-size: 1.2rem; }
+    .current .temp { font-size: 2.5rem; font-weight: 600; margin: 8px 0; }
+    .current .meta { color: #555; }
+    .forecast {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .forecast .day {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    .forecast .day .date { font-weight: 600; margin-bottom: 4px; }
+    .forecast .day .desc { color: #555; margin: 4px 0; min-height: 2.4em; }
+  </style>
+</head>
+<body>
+  <h1>Weather</h1>
+
+  <form class="search-form" method="get" action="{% url 'index' %}">
+    <input type="text" name="city" placeholder="Enter a city name" value="{{ city }}" autofocus required>
+    <button type="submit">Search</button>
+  </form>
+
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+
+  {% if location %}
+  <div class="current">
+    <h2>{{ location.name }}{% if location.country %}, {{ location.country }}{% endif %}</h2>
+    <div class="temp">{{ current.temperature }}&deg;C</div>
+    <div class="meta">{{ current.description }} &middot; Wind {{ current.windspeed }} km/h</div>
+  </div>
+
+  <div class="forecast">
+    {% for day in daily %}
+    <div class="day">
+      <div class="date">{{ day.date }}</div>
+      <div class="desc">{{ day.description }}</div>
+      <div>{{ day.temp_max }}&deg; / {{ day.temp_min }}&deg;</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</body>
+</html>
