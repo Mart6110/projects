@@ -82,48 +82,55 @@ def compare_pdfs(path_a: Path, path_b: Path) -> ComparisonResult:
     )
 
 
-def print_report(path_a: Path, path_b: Path, result: ComparisonResult, show_diff: bool) -> None:
-    print(f"Comparing:\n  A: {path_a}\n  B: {path_b}\n")
+def build_report(path_a: Path, path_b: Path, result: ComparisonResult, show_diff: bool) -> str:
+    lines: list[str] = []
+    lines.append(f"Comparing:\n  A: {path_a}\n  B: {path_b}\n")
 
-    print("== Byte-level (SHA-256) ==")
-    print(f"  {path_a.name}: {result.hash_a}")
-    print(f"  {path_b.name}: {result.hash_b}")
+    lines.append("== Byte-level (SHA-256) ==")
+    lines.append(f"  {path_a.name}: {result.hash_a}")
+    lines.append(f"  {path_b.name}: {result.hash_b}")
     if result.byte_identical:
-        print("  Result: IDENTICAL (files are byte-for-byte the same)\n")
+        lines.append("  Result: IDENTICAL (files are byte-for-byte the same)\n")
     else:
-        print("  Result: DIFFERENT\n")
+        lines.append("  Result: DIFFERENT\n")
 
-    print("== Content-level (extracted text) ==")
-    print(f"  Page count: {result.page_count_a} vs {result.page_count_b}")
+    lines.append("== Content-level (extracted text) ==")
+    lines.append(f"  Page count: {result.page_count_a} vs {result.page_count_b}")
     if result.text_identical:
-        print("  Result: IDENTICAL (text content matches on every page)\n")
+        lines.append("  Result: IDENTICAL (text content matches on every page)\n")
     else:
-        print(f"  Result: DIFFERENT ({len(result.page_diffs)} page(s) differ)\n")
+        lines.append(f"  Result: DIFFERENT ({len(result.page_diffs)} page(s) differ)\n")
         if show_diff:
             for page_num in sorted(result.page_diffs):
-                print(f"  --- Page {page_num + 1} ---")
+                lines.append(f"  --- Page {page_num + 1} ---")
                 for line in result.page_diffs[page_num]:
-                    print(f"  {line}")
-                print()
+                    lines.append(f"  {line}")
+                lines.append("")
 
     if result.metadata_a != result.metadata_b:
-        print("== Metadata differs (informational only) ==")
+        lines.append("== Metadata differs (informational only) ==")
         keys = sorted(set(result.metadata_a) | set(result.metadata_b))
         for key in keys:
             val_a = result.metadata_a.get(key)
             val_b = result.metadata_b.get(key)
             if val_a != val_b:
-                print(f"  {key}: {val_a!r} vs {val_b!r}")
-        print()
+                lines.append(f"  {key}: {val_a!r} vs {val_b!r}")
+        lines.append("")
 
-    print("== Summary ==")
+    lines.append("== Summary ==")
     if result.byte_identical:
-        print("The files are byte-for-byte identical.")
+        lines.append("The files are byte-for-byte identical.")
     elif result.text_identical:
-        print("The files differ at the byte level but their text content is identical")
-        print("(likely differing metadata, encoding, or internal structure only).")
+        lines.append("The files differ at the byte level but their text content is identical")
+        lines.append("(likely differing metadata, encoding, or internal structure only).")
     else:
-        print("The files have different content.")
+        lines.append("The files have different content.")
+
+    return "\n".join(lines)
+
+
+def print_report(path_a: Path, path_b: Path, result: ComparisonResult, show_diff: bool) -> None:
+    print(build_report(path_a, path_b, result, show_diff))
 
 
 def main() -> int:
